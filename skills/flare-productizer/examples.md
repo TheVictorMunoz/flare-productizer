@@ -1,57 +1,105 @@
-# flare-productizer — Example Review Scenarios
+# flare-productizer example reviews
 
-Illustrative, abbreviated outputs showing the expected shape and honesty. Real reviews follow the full structure in `SKILL.md`. Details below are fictional and for format guidance only.
+These abbreviated fictional examples demonstrate reasoning and output shape. They are not claims about real deployments or substitutes for inspecting a repository and current official Flare sources.
+
+## Example 1: XRP onboarding through FAssets and Smart Accounts
+
+**Request**
+
+> Use flare-productizer to review this repository and demo. The product helps XRP holders enter a yield position without setting up an EVM wallet. Do not make changes. End with the highest-priority next-task prompt.
+
+**Current product, excerpt**
+
+The intended flow appears to be:
+
+```text
+Connect XRPL wallet → derive or resolve the user's Flare Smart Account
+→ send XRP through the FAssets minting path → receive FXRP
+→ route FXRP into a vault → view the resulting position
+```
+
+- `verified`: the repository derives the user's Smart Account and contains the vault deposit call.
+- `claimed`: one XRP payment completes minting and vault entry.
+- `unavailable`: the supplied demo could not be opened, so the end-to-end interaction was not observed.
+
+**Core-flow finding**
+
+After wallet approval, the interface marks the action successful before the external payment, minting, and vault position are confirmed. The user cannot distinguish waiting from failure.
+
+**Flare integration review**
+
+- `Flare Smart Accounts — ESSENTIAL`: the product promise is that an XRPL user controls activity on Flare without first adopting a separate EVM account and gas workflow. Removing Smart Accounts breaks that promise.
+- `FAssets / FXRP — ESSENTIAL`: XRP must become a usable asset on Flare before entering the vault. Removing FAssets removes the asset path.
+- `FTSO — USEFUL BUT REPLACEABLE`: the feed supplies a USD estimate, but no product decision or transaction rule depends on it.
+
+Each mechanism and the repository's use of it must still be checked against the current official skills and docs.
+
+**Prototype → product gap**
+
+`BIGGEST GAP`: the product cannot yet prove or communicate the real state of the user's asset movement. For a flow involving XRP, FXRP, and a vault position, premature success is a trust failure.
+
+**Next task**
+
+A `NEXT IMPLEMENTATION PROMPT` covering only the real pending, confirmed, failed, and recovery states for this flow. Do not bundle unrelated APY, visual redesign, or portfolio work into the same prompt.
 
 ---
 
-## Example 1 — Flare Smart Accounts / XRP product
+## Example 2: Confidential Compute for a private decision
 
-**Prompt:** "Use flare-productizer to review this repo and demo. Product: an XRP yield onboarding app. Target user: XRP holders unfamiliar with EVM. Demo: https://example.com. Evaluate the product and Flare integration. Don't make changes; give me the next implementation prompt."
+**Request**
 
-**Product Reconstruction (excerpt):** Web app; connect XRPL wallet → resolve a Flare Smart Account → deposit XRP into an FXRP vault → view position. Vault deposit path *verified* in the contract calls; APY figure is *claimed* (hard-coded in the frontend, not read on-chain).
+> Productize this Flare Confidential Compute prototype. The stated user is an insurer running parametric payout logic over private policy data. Review the attached screenshots if accessible.
 
-**Core User Flow finding:** After wallet approval there is no pending state — the UI jumps straight to "success" before confirmation. On RPC timeout the user sees nothing. Core-flow completion by a first-timer is doubtful.
+**Current product, excerpt**
 
-**Flare Integration Review:**
-- **Flare Smart Accounts — ESSENTIAL.** The entire value prop is "XRP holders act on Flare without touching EVM"; the XRPL-controlled account removes exactly that friction. Verified against `flare-smart-accounts`.
-- **FAssets/FXRP — ESSENTIAL.** Deposits mint/route FXRP; without it there's no yield asset.
-- **FTSO — USEFUL BUT REPLACEABLE.** Used only to display a USD price label; no decision depends on it.
+- `verified`: the repository builds a TEE extension and routes a signed instruction to an onchain receiver.
+- `claimed`: private policy inputs remain confidential through the deployed path.
+- `inferred`: the intended trust model relies on attestation and a reproducible extension build.
+- `unavailable`: screenshots were not inspectable in the current environment, so no UI conclusion is made.
 
-**Biggest gap:** trustworthy transaction lifecycle. Users move real XRP but can't tell if it worked.
+**Flare integration review**
 
-**Next Implementation Prompt:** (single task) implement pending/confirmed/failed states + real on-chain APY read for the deposit flow — full template filled per `reference.md`. Not executed.
+- `FCC — ESSENTIAL`: the claimed product requires private inputs plus evidence about which computation ran. Public smart-contract execution would expose the inputs or logic. The conclusion remains conditional until the deployed measurement and verification path are confirmed.
+- `FDC — MEANINGFUL`, if the implementation actually uses an FDC-supported attestation to prove the triggering external event. If the repository only mentions FDC without requesting and verifying a proof, classify it as claimed or superficial rather than implemented.
 
----
+**Prototype → product gap**
 
-## Example 2 — FCC / Confidential Compute product
+`BIGGEST GAP`: no verified link between the extension users trust, the attested code measurement, and the deployed execution path. Without that chain, “verifiable confidential execution” is a pitch rather than a demonstrated product property.
 
-**Prompt:** "Productize this Flare confidential-compute app. Target user: insurers wanting parametric payouts. Screenshots attached."
+**Next task**
 
-**Demo honesty note:** if the environment cannot open the attached screenshots, state that and ask for a short transcript or a supported-format image before assessing the UI.
-
-**Product Reconstruction (excerpt):** A TEE extension computes a payout decision from a private policy and signs it; an on-chain `InstructionSender` routes the instruction. Extension build present; attestation/reproducible-build step *inferred*, not verified.
-
-**Flare Integration Review:**
-- **FCC — ESSENTIAL.** The payout logic and policy parameters must stay confidential and be verifiably executed; ordinary smart-contract execution would expose the policy. Verified against `flare-fcc`.
-- **FDC — MEANINGFUL.** Weather/event data is attested to trigger payouts; strengthens trust but a single oracle could theoretically substitute.
-
-**Technical readiness gap:** no evidence the deployed code hash matches an attested reproducible build — the core trust claim is unverified. That's the must-fix.
-
-**Next Implementation Prompt:** add and document attestation verification (code-hash check) in the payout path, with a failing-attestation rejection state. Template filled; not executed.
+A `NEXT TECHNICAL SPIKE PROMPT` that traces the build artifact, measurement, attestation, registry/deployment record, and rejection behavior. Convert it to an implementation prompt only after the uncertainty is resolved.
 
 ---
 
-## Example 3 — Generic Flare prototype with a superficial integration (the skill must be willing to say so)
+## Example 3: a superficial Flare integration
 
-**Prompt:** "Review my Flare hackathon project and tell me if the Flare integration is meaningful."
+**Request**
 
-**Product Reconstruction (excerpt):** A to-do/notes app with wallet login. The only Flare touchpoint: on save, it reads an FTSO price feed and stores the current FLR/USD price alongside the note. Nothing in the product uses that value.
+> Review my Flare hackathon project and tell me whether the Flare integration is meaningful.
 
-**Flare Integration Review:**
-- **FTSO — SUPERFICIAL.** *Verified:* the feed read exists but its output is never used in any decision, display the user cares about, or product outcome. Removing the FTSO call would not change the user experience at all. This is technology showcased, not a product capability. Do **not** manufacture a justification — the honest finding is that this app has no meaningful Flare integration yet.
+**Current product, excerpt**
 
-**Prototype → Product Gap — BIGGEST GAP:** there is no user problem for which Flare is the answer. Before more UX work, decide whether Flare is actually part of this product. Two honest paths: (a) drop the Flare integration and ship a normal notes app, or (b) find a real job-to-be-done where a Flare primitive is load-bearing (e.g. verifiable timestamping via FDC, or token-gated shared notes) and rebuild around it.
+The repository is a notes application with wallet login. When a note is saved, it reads a FLR/USD feed and stores the value beside the note. Nothing displays the value later or uses it in a decision.
 
-**Prioritization — Must Fix:** decide the product's actual reason to be on Flare; everything else is premature.
+- `verified`: the feed call exists and its output is stored.
+- `verified`: removing the stored value would not change the current note workflow.
+- `unavailable`: no target-user research or usage evidence was supplied.
 
-**Next Implementation Prompt:** framed as a *decision + spike*, not polish — e.g. "prototype one FDC-attested feature that a target user would actually pay attention to, behind a flag, without removing existing notes functionality" — template filled; not executed. If the user chooses path (a), the prompt instead removes the unused FTSO call cleanly.
+**Flare integration review**
+
+`FTSO — SUPERFICIAL`: the call demonstrates that the developer can read a feed, but it does not create a user capability or change a product outcome. More feed usage is not automatically the answer.
+
+**Prototype → product gap**
+
+`BIGGEST GAP`: the project has no demonstrated user problem for which Flare is load-bearing. UX polish cannot resolve that product uncertainty.
+
+**Priorities**
+
+1. Decide whether the product should exist as a normal notes app or whether there is a real target-user problem that requires verifiable external data, onchain ownership, confidential computation, or another specific mechanism.
+2. Do not choose a protocol first and invent a use case afterward.
+3. Do not implement another Flare feature until evidence identifies the missing capability.
+
+**Next task**
+
+A `NEXT VALIDATION PROMPT`, not an implementation prompt: interview or test with the stated target user, document the job they cannot accomplish with existing tools, and determine whether any Flare property is necessary. If no necessary property emerges, remove the decorative integration rather than forcing one.

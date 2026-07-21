@@ -1,39 +1,58 @@
-# flare-productizer — Summer Signal Mode
+# flare-productizer Summer Signal mode
 
-Optional lens. **Only** activate when the user explicitly asks (`mode: summer-signal`, "review my Summer Signal project", etc.). It is additive: keep the full product review from `SKILL.md`, then add the section below. Do not let this scoring/track language leak into ordinary reviews, and do not turn the skill into a hackathon judge.
+This is an optional program-specific lens. Activate it only when the user explicitly asks for a Summer Signal review.
 
-## What to add: `## 10. Summer Signal Readiness`
+Summer Signal rules, tracks, dates, and judging language can change. Do not treat this file as the source of truth for the current program. Before applying the lens:
 
-Evaluate, in prose (not gamified 1–10 scores):
+1. inspect the current official program brief, submission page, rules, or user-supplied judging criteria;
+2. cite the source used;
+3. mark any unavailable criterion rather than reconstructing it from memory.
 
-1. **Product usefulness** — does it solve a real user problem, or mainly showcase technology?
-2. **Quality & meaningfulness of the Flare integration** — reuse the ESSENTIAL / MEANINGFUL / USEFUL BUT REPLACEABLE / SUPERFICIAL classification from the main review. Superficial integrations should be named as such.
-3. **Technical execution** — does the critical path actually work and hold together?
-4. **Evidence of new work during the program** — see the New-Work Ledger below.
-5. **Clarity of the product and its future potential** — can an outsider understand what it is and where it's going?
+If no current official brief is accessible, complete the normal product review and clearly state that program-specific alignment could not be verified.
 
-### New-Work Ledger (existing vs new)
+## Add one section: `Summer Signal Readiness`
 
-For projects that predate the program, explicitly separate:
+Keep the normal product review intact. Add only findings that are supported by the current program criteria.
 
-- **Pre-existing** — what appears to have existed before the program.
-- **Newly built** — what was created during it.
-- **Ported** — moved from another stack/chain with little change.
-- **Integrated / improved** — meaningfully extended or wired into Flare during it.
+At minimum, assess these product-level questions when they are relevant to the supplied brief:
 
-Base this on repo history where available (commit timeline, changelog, dependency additions, first-seen dates of Flare-specific code) and on the demo/docs. **If the distinction cannot be determined from the repository/history/evidence, say so explicitly** — do not guess, and note that clearer evidence of new work would strengthen the submission.
+- Does the project solve a recognizable user problem or mainly demonstrate technology?
+- Is the Flare integration essential, meaningful, replaceable, or superficial under the mechanism test in `SKILL.md`?
+- Does the critical path work as shown?
+- What evidence distinguishes work completed during the program from older work?
+- Can an outsider understand the product, current state, and next credible milestone?
 
-### Track alignment
+Do not convert these questions into arbitrary 1–10 scores unless the official current program explicitly requires numeric scoring.
 
-Identify whether the project appears aligned with:
+## New-work ledger
 
-- **Interoperable Asset Products**
-- **Confidential Compute Apps**
-- **both**, or
-- **unclear**
+When the project predates the program, separate:
 
-Do **not** force-fit a project into a track. If it's ambiguous, say "unclear" and explain what would make the alignment obvious. Verify current track definitions against official Summer Signal / Flare program sources rather than assuming; if unavailable, describe alignment in plain terms and flag that track names should be confirmed.
+| Category | Meaning |
+|---|---|
+| `pre-existing` | Evidence shows the capability existed before the program window. |
+| `newly built` | Evidence shows it was created during the program window. |
+| `ported` | Existing work was moved from another stack or chain with limited functional change. |
+| `integrated or improved` | Existing work was materially extended or connected to Flare during the program. |
+| `undetermined` | Available history cannot support the distinction. |
 
-### Tone
+Use repository history, release/deployment timestamps, dependency additions, first appearance of Flare-specific code, changelogs, and supplied demo evidence. A commit timestamp proves when a commit appeared; it does not always prove when the work was created. State that limitation where relevant.
 
-Same as the main review: direct, evidence-based, constructive. No hype. The goal is to help the builder demonstrate real, meaningful work and a genuine product — not to award points.
+Never guess the ledger to make a submission look stronger.
+
+## Track alignment
+
+Use the exact track names and definitions from the current official program brief. For each candidate track:
+
+1. quote or summarize the criterion accurately;
+2. identify the repository or product evidence that matches it;
+3. state the mismatch or missing evidence;
+4. conclude `aligned`, `partially aligned`, or `unclear`.
+
+Do not force-fit the project. If the current track definitions are unavailable, do not publish old track names as though they are current.
+
+## Tone and output
+
+Keep the same evidence standards as the main review. The purpose is to help the builder show real product value and real work, not to simulate a judge or inflate the submission.
+
+The final next-task prompt must still target the product's biggest bottleneck. Program presentation work should not outrank a broken or unproven core user outcome merely because a deadline exists.

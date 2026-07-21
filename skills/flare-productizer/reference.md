@@ -1,154 +1,211 @@
-# flare-productizer — Reference
+# flare-productizer reference
 
-Long source lists, skill selection, and the implementation-prompt template. Keep this out of `SKILL.md` so the core instructions stay followable.
+Use this file for source selection and final prompt construction. The review method itself lives in `SKILL.md`.
 
-## 1. Official Flare sources (source of truth)
+## Official Flare sources
 
-Resolve every Flare technical claim in this order, and state which tier you used.
+Resolve Flare technical claims from current primary sources. Do not copy an address, deployment state, supported asset, or protocol behavior from an old review.
 
-### Tier 1 — Installed official Flare AI Skills
+### 1. Official Flare AI Skills
 
-Repo: `https://github.com/flare-foundation/flare-ai-skills`. Six skills, each with `SKILL.md` + `reference.md`:
+Repository: <https://github.com/flare-foundation/flare-ai-skills>
 
-| Skill | Covers |
+| Skill | Use it to verify |
 |---|---|
-| `flare-general` | networks (Mainnet/Coston2/Songbird/Coston), RPC endpoints, explorers, faucets, chain IDs, contract resolution via `FlareContractRegistry`, FSP, tooling, WNat |
-| `flare-ftso` | FTSOv2 price/data feeds — consuming feeds on/off-chain, feed IDs, delegation |
-| `flare-fdc` | Flare Data Connector — attestation types, verifier + DA-layer endpoints, `FdcVerification`, proof round-trips |
-| `flare-fassets` | FXRP / FBTC / FDOGE — minting, redemption, vaults, agents, collateral |
-| `flare-smart-accounts` | account abstraction for XRPL users — XRPL-controlled accounts acting on Flare |
-| `flare-fcc` | Confidential Compute — TEE extensions, `TeeExtensionRegistry`/`TeeMachineRegistry`, `InstructionSender`, attestation, reproducible builds |
+| `flare-general` | Networks, RPCs, explorers, faucets, chain IDs, contract discovery, tooling, and general architecture |
+| `flare-ftso` | FTSO feeds, feed identifiers, onchain/offchain consumption, and delegation |
+| `flare-fdc` | Attestation types, proof acquisition, DA-layer interaction, and onchain verification |
+| `flare-fassets` | FAssets/FXRP minting and redemption, agents, collateral, vault paths, and contract integration |
+| `flare-smart-accounts` | XRPL-controlled Flare accounts, proof-based instructions, direct-minting flows, executors, and account behavior |
+| `flare-fcc` | Confidential Compute, TEE extensions, registries, attestation, instruction routing, and reproducible builds |
 
-If the relevant skill is **not installed**, note it, fall back to Tier 2/3, and recommend installing it (see README for commands).
+An installed skill is structured reference material, not proof that the reviewed project implemented the mechanism correctly. Compare the project against the source.
 
-### Tier 2 — Flare Developer Hub
+### 2. Flare Developer Hub
 
-`https://dev.flare.network/`. **Append `.md` to any page** for agent-ready markdown. Discover the corpus via `https://dev.flare.network/llms.txt`.
+- Documentation root: <https://dev.flare.network/>
+- Agent-readable index: <https://dev.flare.network/llms.txt>
+- Network getting started: <https://dev.flare.network/network/getting-started>
+- FTSO getting started: <https://dev.flare.network/ftso/getting-started>
+- FDC getting started: <https://dev.flare.network/fdc/getting-started>
+- FAssets developer guides: <https://dev.flare.network/fassets/developer-guides>
+- Smart Accounts guides: <https://dev.flare.network/smart-accounts/guides>
+- Confidential Compute getting started: <https://dev.flare.network/fcc/guides/getting-started>
 
-Useful entry points (all support `.md`):
+Developer Hub pages can normally be requested as Markdown by appending `.md`. If direct retrieval fails, inspect the canonical page through an available browser or use the official repository source. Do not silently fall back to memory.
 
-- Network getting started — `https://dev.flare.network/network/getting-started`
-- FTSOv2 — `https://dev.flare.network/ftso/getting-started`
-- FDC — `https://dev.flare.network/fdc/getting-started`
-- FAssets developer guides — `https://dev.flare.network/fassets/developer-guides`
-- Smart Accounts guides — `https://dev.flare.network/smart-accounts/guides`
-- FCC getting started — `https://dev.flare.network/fcc/guides/getting-started`
+### 3. Official GitHub repositories
 
-### Tier 3 — flare-foundation GitHub
+Organization: <https://github.com/flare-foundation>
 
-`https://github.com/flare-foundation` — current README/docs/code. Starters worth knowing: `flare-hardhat-starter`, `flare-foundry-starter`. Prefer the live repo over memory.
+Use current code, release information, and repository documentation when implementation details matter. Confirm that a repository and branch are still current before treating them as authoritative.
 
-### Tier 4 — clearly-labeled secondary info
+### 4. Secondary material
 
-Only if strictly necessary, and always labeled as secondary + verified.
+Use secondary sources only when primary sources do not answer the question. Label them and do not let them override current official code or documentation.
 
-**Never** invent protocol behavior, contract addresses, deployment facts, supported functionality, or maturity status. When uncertain or possibly stale, say so and verify.
+## Mechanism-to-skill selection
 
-## 2. Which skill to consult (auto-select)
+Choose by what causes the user outcome:
 
-- price/market/risk/automation decisions driven by a feed → `flare-ftso`
-- verifying an external chain/web event or state → `flare-fdc`
-- wrapping/minting/redeeming XRP/BTC/DOGE, vaults, agents → `flare-fassets`
-- XRPL wallet controlling actions on Flare, gasless/abstracted UX for XRPL users → `flare-smart-accounts`
-- secrets/keys/strategy/computation needing confidentiality or verifiable execution in a TEE → `flare-fcc`
-- networks, RPCs, contract registry, general architecture → `flare-general`
+- a feed drives a display, rule, valuation, risk decision, or automation: `flare-ftso`;
+- an external transaction, event, or state must be proved: `flare-fdc`;
+- XRP or another non-smart-contract asset is minted, used on Flare, or redeemed: `flare-fassets`;
+- an XRPL address controls actions on Flare or avoids a separate EVM wallet/gas path: `flare-smart-accounts`;
+- private data or computation needs confidentiality plus verifiable execution: `flare-fcc`;
+- network, tooling, registry, or general architecture questions: `flare-general`.
 
-A project can need several (e.g. an FXRP yield app may touch `flare-smart-accounts` + `flare-fassets` + `flare-ftso`).
+A mechanism can require more than one skill. For example, a direct FXRP-to-vault flow may require both `flare-fassets` and `flare-smart-accounts`; a product using an FTSO price to manage an FXRP position may also require `flare-ftso`.
 
-## 3. Evidence tagging
+## Evidence labels
 
-Tag every non-trivial claim:
+Use these labels where the distinction matters:
 
-- **verified** — observed directly in code or in the demo you actually inspected.
-- **inferred** — reasoned from structure/naming/config, not directly confirmed.
-- **claimed** — asserted by README/docs/pitch but not confirmed in code or demo.
+- `verified`: observed in code, tests, runtime behavior, deployment evidence, repository history, or an inspected demo;
+- `inferred`: a reasoned interpretation not directly confirmed;
+- `claimed`: stated by project documentation, pitch, comments, or the user without independent confirmation;
+- `unavailable`: evidence could not be inspected.
 
-Keep these distinct in the write-up. Traction and product-market fit require **verified** evidence, never **claimed**.
+Repository code can verify implementation but cannot by itself verify adoption, retention, revenue, customer demand, or product-market fit.
 
-## 4. NEXT IMPLEMENTATION PROMPT — template
+## Next-task prompt template
 
-Fill this in for the single highest-priority task. Copy-ready; the user pastes it into their coding agent. **Do not execute it.**
+Select the title that matches the bottleneck:
 
+- `NEXT IMPLEMENTATION PROMPT` for a code/configuration change;
+- `NEXT TECHNICAL SPIKE PROMPT` for resolving technical uncertainty;
+- `NEXT VALIDATION PROMPT` for user or product evidence.
+
+```text
+<NEXT IMPLEMENTATION PROMPT | NEXT TECHNICAL SPIKE PROMPT | NEXT VALIDATION PROMPT>
+
+Objective:
+<one task and one expected outcome>
+
+User / product reason:
+<the user-facing friction, failure, or uncertainty this removes>
+
+Relevant existing context:
+- <verified behavior or evidence>
+- <important inference, clearly labeled>
+- <constraint imposed by the current product or Flare mechanism>
+
+Inspect or use first:
+- <files, components, routes, contracts, evidence, or participants>
+- <official Flare source required for the task>
+
+Requirements / procedure:
+- <specific, checkable requirement or research step>
+- <how success, pending, failure, and recovery should behave when relevant>
+
+Constraints:
+- <scope, framework, network, deployment, or product constraints>
+- Do not modify unrelated functionality.  # include for code tasks
+
+Tests / validation:
+- <automated or manual check>
+- <evidence that would confirm or reject the product assumption>
+
+Definition of done:
+- <observable acceptance criteria>
+
+Stop after completing this task and report the evidence. Do not expand scope.
 ```
+
+Do not fill a section with generic boilerplate. Remove sections that genuinely do not apply, while preserving objective, reason, evidence, procedure, validation, and definition of done.
+
+## Worked implementation prompt
+
+```text
 NEXT IMPLEMENTATION PROMPT
 
 Objective:
-<one crisp sentence describing the single task>
+Make the deposit screen reflect the real transaction lifecycle from wallet
+approval through final confirmation.
 
 User / product reason:
-<why this matters from the user's perspective — the friction or failure it removes>
+A user can initiate a deposit but cannot tell whether it is pending, confirmed,
+or failed. That uncertainty makes a real asset movement feel untrustworthy.
 
 Relevant existing context:
-<what already exists that the task builds on; verified vs inferred>
+- Verified: the deposit handler submits through the wallet and receives a hash.
+- Verified: the hash is logged but not shown in the interface.
+- Inferred: the existing notification component can represent the lifecycle.
 
-Inspect first:
-- <likely files / components inferred from the repo>
-- <relevant Flare integration points>
+Inspect or use first:
+- deposit form and submit handler
+- wallet transaction utility
+- notification/state components
+- network and explorer configuration
 
-Implementation requirements:
-- <specific, testable requirements>
-- <required Flare-native behavior verified against official sources>
-
-Required error / edge states:
-- <pending / confirmed / failed lifecycle, retries, network checks, empty/timeout states>
+Requirements / procedure:
+- show pending immediately after wallet approval;
+- derive confirmation from the real transaction result;
+- show the resulting position or balance after confirmation;
+- preserve the transaction hash and link to the configured explorer;
+- handle wallet rejection, network mismatch, RPC timeout, and revert;
+- offer retry only when retrying is safe.
 
 Constraints:
-- Do not modify unrelated functionality.
-- <framework/version/deploy constraints observed in the repo>
+- preserve existing accounting and contract calls;
+- do not mark a transaction successful before confirmation;
+- do not modify unrelated functionality.
 
-Tests / validation criteria:
-- <automated tests to add or update>
-- <manual/user validation, proportional to stage>
+Tests / validation:
+- automated tests for pending, confirmed, rejected, timeout, and reverted states;
+- a first-time user can identify the transaction state without opening an explorer.
 
 Definition of done:
-- <concrete acceptance criteria a reviewer can check>
+- every submitted deposit reaches an accurate pending, confirmed, or failed UI state;
+- the hash remains retrievable;
+- existing deposit behavior and tests still pass.
 
-Do not modify unrelated functionality.
+Stop after completing this task and report the evidence. Do not expand scope.
 ```
 
-### Worked example (style reference)
+## Worked validation prompt
 
-```
-NEXT IMPLEMENTATION PROMPT
+```text
+NEXT VALIDATION PROMPT
 
 Objective:
-Make the deposit flow communicate the full transaction lifecycle without a block explorer.
+Determine whether XRP holders understand the product promise and can predict
+what will happen before they approve the first transaction.
 
 User / product reason:
-Users can initiate a deposit but can't tell whether it is pending, confirmed, or
-failed, so they don't trust that their XRP actually moved.
+The current review cannot distinguish a weak interface from a promise that the
+target user does not value or understand. Building more transaction UI before
+resolving that uncertainty may waste work.
 
 Relevant existing context:
-Deposit is triggered in the frontend deposit component and submitted via the wallet;
-the tx hash is currently logged to console only (verified).
+- Verified: the landing page leads with protocol names before the user outcome.
+- Claimed: the target user is an XRP holder who does not use EVM wallets.
+- Unavailable: no user-test or completion evidence was supplied.
 
-Inspect first:
-- the deposit form / submit handler component
-- the wallet/tx submission utility
-- any existing toast/notification module
+Inspect or use first:
+- current landing page and onboarding flow
+- five participants who match the stated target user
 
-Implementation requirements:
-- explicit pending state shown immediately after wallet approval
-- confirmed state showing the resulting position/balance
-- actionable failure state with a plain-language reason
-- retry path where safe to retry
-- preserve and surface the transaction hash (with explorer link)
-
-Required error / edge states:
-- user rejects in wallet; RPC timeout; tx reverts; network mismatch
+Requirements / procedure:
+- show the product without explanation;
+- ask each participant what they think it does and what they expect after the
+  main action;
+- let them attempt the core flow without coaching;
+- record points of confusion and whether they can explain Flare's role afterward.
 
 Constraints:
-- Do not alter unrelated deposit accounting or contract calls.
+- do not teach the product before the task;
+- do not recruit only blockchain developers;
+- do not change the interface during the five-session run.
 
-Tests / validation criteria:
-- unit tests for each lifecycle state transition
-- a first-time user can complete a deposit and correctly identify success/failure
-  without external instructions
+Tests / validation:
+- record comprehension and completion for every participant;
+- identify repeated confusion rather than isolated preferences.
 
 Definition of done:
-- all three states (pending/confirmed/failed) render from real tx status
-- tx hash always retrievable from the UI
-- no regressions in the existing deposit path
+- evidence shows whether the promise, first action, and expected outcome are
+  understood;
+- the next product decision follows from the observed pattern.
 
-Do not modify unrelated functionality.
+Stop after completing this task and report the evidence. Do not expand scope.
 ```

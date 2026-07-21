@@ -1,68 +1,147 @@
 # flare-productizer
 
-An Agent Skill that reviews an existing **Flare** prototype, hackathon build, MVP, or early app and turns it into a plan for a **stronger real product** — ending with a single copy-ready implementation prompt you can *choose* to run.
+`flare-productizer` is an Agent Skill for reviewing an existing Flare prototype, hackathon build, MVP, or early application. It reconstructs what has actually been built, identifies the main gap between the prototype and a usable product, evaluates whether Flare is doing meaningful work, and returns the highest-priority next task as a copy-ready prompt.
 
-It behaves like a strong product engineer / technical product lead: direct, evidence-based, no marketing language, no overpraise, no invented traction.
+It reviews. It does not modify the project being reviewed.
 
-## What it does
+## Start here: what an Agent Skill is
 
-- Inspects the repository (and demo / video / screenshots when they can actually be inspected) to reconstruct **what already exists**.
-- Reconstructs the **core user flow** and evaluates the real experience.
-- Assesses the product across problem/user clarity, core experience, technical product readiness, and the user-facing demo.
-- **Verifies the Flare integration** against official Flare sources and classifies it as ESSENTIAL / MEANINGFUL / USEFUL BUT REPLACEABLE / SUPERFICIAL — honestly.
-- Identifies the **prototype → product gap** and the single biggest blocker.
-- Produces a short, **opinionated** prioritized list (max 3 must-fix, max 3 high-impact next).
-- Defines **cheap validation** proportional to the product stage.
-- Ends with a **NEXT IMPLEMENTATION PROMPT** — self-contained and copy-ready.
+An Agent Skill is a folder of instructions and reference files that an AI coding agent can load when a task matches the skill. It is not a standalone application, hosted service, model, or executable.
 
-## What it does NOT do
+After you install this repository, your agent reads `skills/flare-productizer/SKILL.md` and follows its review process. The result still depends on what the agent can access: the repository, its available tools, any demo you provide, and current Flare documentation.
 
-- **It does not automatically edit or implement anything** in the reviewed project. Implementation happens only if you separately paste the generated prompt into a coding agent and tell it to run.
-- It is **not** a code-style/lint review — it ignores taste-level nits.
-- It is **not** a hackathon scoreboard — no "8/10" gamified scores. Summer Signal scoring stays behind an explicit mode.
-- It does **not** invent Flare protocol behavior, addresses, deployments, or maturity — those come from official Flare sources.
+In practical terms:
 
-## Installation
-
-This repo follows the Agent Skills layout used by [`flare-foundation/flare-ai-skills`](https://github.com/flare-foundation/flare-ai-skills). The skill lives at `skills/flare-productizer/`.
-
-### Claude Code
-
-**Project/user skills directory** — copy the skill folder into your skills directory:
-
-```bash
-# project-scoped
-mkdir -p .claude/skills
-cp -r skills/flare-productizer .claude/skills/
-
-# or user-scoped (all projects)
-mkdir -p ~/.claude/skills
-cp -r skills/flare-productizer ~/.claude/skills/
+```text
+Your repo + optional demo + product context
+                    ↓
+     AI agent using flare-productizer
+                    ↓
+Evidence-based product review + one next-task prompt
 ```
 
-Then invoke it in a session with `/flare-productizer` or by asking Claude to "use flare-productizer".
+## The productization idea, from first principles
 
-**Via `skills.sh` (if you publish this repo):**
+A prototype proves that some capability can work. A product lets a specific user reach a useful outcome repeatedly, understand what is happening, recover when something fails, and trust the result.
 
-```bash
-npx skills add https://github.com/<your-org>/flare-productizer --skill flare-productizer
+Productization is the work between those states. The skill therefore reviews the causal chain rather than counting features:
+
+```text
+User and job to be done
+        ↓
+Core user flow
+        ↓
+Actual system behavior and failure states
+        ↓
+What Flare uniquely enables
+        ↓
+Evidence that the outcome works
+        ↓
+Single highest-leverage next step
 ```
 
-### Other Agent-Skills-compatible tools
+The review asks four basic questions:
 
-- **Cursor:** `mkdir -p .cursor/skills && cp -r skills/flare-productizer .cursor/skills/`, then enable it in Settings → Rules for AI.
-- **Any `skills.sh`-compatible agent:** point `npx skills add` at this repo, or copy `skills/flare-productizer/` into that tool's skills directory.
+1. What exists now, based on code and observable behavior rather than the pitch?
+2. What outcome is the target user trying to reach?
+3. What currently blocks that outcome from being understandable, dependable, or useful?
+4. What is the smallest next task that removes the biggest blocker?
 
-## Official Flare knowledge dependencies (recommended)
+## What the skill produces
 
-flare-productizer **delegates all Flare technical claims to official Flare sources** rather than hard-coding protocol details. For the strongest reviews, also install the official Flare AI Skills so it can consult them directly:
+A normal review includes:
 
-Repo: <https://github.com/flare-foundation/flare-ai-skills>
+- a reconstruction of the current product, separated into verified, inferred, and merely claimed behavior;
+- the core user flow and its success, pending, failure, and recovery states;
+- product and UX findings tied to evidence;
+- technical readiness issues that affect the critical user path, not style-level code comments;
+- a Flare integration review based on current official sources;
+- a `PROTOTYPE → PRODUCT GAP` with one clearly stated biggest blocker;
+- at most three must-fix items and three high-impact next improvements;
+- cheap validation appropriate to the product's stage;
+- one `NEXT IMPLEMENTATION PROMPT` for the highest-priority next task.
 
-> **Verify the current install commands from that repo** — they can change. As of this writing:
+The last prompt may describe code, a technical spike, or a validation task. The skill must not force more implementation when the evidence says the next bottleneck is product understanding or user validation.
+
+## How it evaluates Flare
+
+The skill does not reward a project for mentioning many Flare protocols. For each important integration, it asks a counterfactual question:
+
+> If this Flare primitive disappeared, what user capability or product outcome would be lost?
+
+It then classifies the integration:
+
+| Classification | Meaning |
+|---|---|
+| `ESSENTIAL` | The core capability depends on it. |
+| `MEANINGFUL` | It materially improves the product, although another architecture could exist. |
+| `USEFUL BUT REPLACEABLE` | It adds value but is not central to the product. |
+| `SUPERFICIAL` | Removing it would barely change the user experience or outcome. |
+
+Technical claims are checked against installed official Flare AI Skills when available, then the [Flare Developer Hub](https://dev.flare.network/), then current [`flare-foundation`](https://github.com/flare-foundation) repositories. The skill does not hard-code contract addresses, deployment status, or protocol behavior.
+
+## What it does not do
+
+- It does not edit, refactor, deploy, or implement anything in the reviewed repository.
+- It does not sign transactions, access wallets, or handle private keys.
+- It does not treat README claims as proof that a feature works.
+- It does not infer traction from code. Traction requires product evidence such as usage data, completed user tests, or supplied customer evidence.
+- It does not perform a general lint or code-style review.
+- It does not generate a giant backlog or gamified `8/10` scores.
+- It does not pretend to have inspected a URL, video, or screenshot that the agent could not actually access.
+
+## Install
+
+### Quick install with `skills`
+
+Run this from the project where you want to use the skill:
 
 ```bash
-# skills.sh (recommended)
+npx skills add https://github.com/TheVictorMunoz/flare-productizer --skill flare-productizer
+```
+
+The CLI finds the public repository, discovers `flare-productizer`, and asks which compatible agent(s) should receive it. This command has been tested against the published repository.
+
+Useful variants:
+
+```bash
+# Install for your user account instead of one project
+npx skills add https://github.com/TheVictorMunoz/flare-productizer \
+  --skill flare-productizer --global
+
+# Non-interactive install for named agents
+npx skills add https://github.com/TheVictorMunoz/flare-productizer \
+  --skill flare-productizer --agent claude-code cursor --yes
+```
+
+The installer supports Claude Code, Cursor, Codex, Hermes Agent, and other Agent-Skills-compatible tools. Review a skill before using it: an installed skill guides an agent that may have access to your files and tools.
+
+### Manual install
+
+Clone this repository, then copy the entire skill folder into the skills directory used by your agent. Keep `SKILL.md`, `reference.md`, `examples.md`, and `summer-signal.md` together.
+
+```bash
+git clone https://github.com/TheVictorMunoz/flare-productizer.git
+cd flare-productizer
+
+# Claude Code, project-scoped
+mkdir -p /path/to/your-project/.claude/skills
+cp -r skills/flare-productizer /path/to/your-project/.claude/skills/
+
+# Cursor, project-scoped
+mkdir -p /path/to/your-project/.cursor/skills
+cp -r skills/flare-productizer /path/to/your-project/.cursor/skills/
+```
+
+For user-wide installation, copy the folder to `~/.claude/skills/` or `~/.cursor/skills/` instead.
+
+## Optional Flare knowledge skills
+
+`flare-productizer` works without additional skills because it can consult official Flare documentation and repositories. Installing the official [Flare AI Skills](https://github.com/flare-foundation/flare-ai-skills) gives the reviewing agent more structured protocol-specific context.
+
+Install only the skills relevant to the project, for example:
+
+```bash
 npx skills add https://github.com/flare-foundation/flare-ai-skills --skill flare-general
 npx skills add https://github.com/flare-foundation/flare-ai-skills --skill flare-ftso
 npx skills add https://github.com/flare-foundation/flare-ai-skills --skill flare-fdc
@@ -71,92 +150,76 @@ npx skills add https://github.com/flare-foundation/flare-ai-skills --skill flare
 npx skills add https://github.com/flare-foundation/flare-ai-skills --skill flare-fcc
 ```
 
-```bash
-# Claude Code plugin marketplace
-/plugin marketplace add flare-foundation/flare-ai-skills
-/plugin install flare-general@flare-ai-skills
-/plugin install flare-ftso@flare-ai-skills
-/plugin install flare-fdc@flare-ai-skills
-/plugin install flare-fassets@flare-ai-skills
-/plugin install flare-smart-accounts@flare-ai-skills
-/plugin install flare-fcc@flare-ai-skills
-```
+These are reference dependencies, not runtime dependencies. The reviewed application does not need to import them.
 
-When a relevant official skill isn't installed, flare-productizer falls back to the **Flare Developer Hub** (`https://dev.flare.network/` — append `.md` to any page; discover via `https://dev.flare.network/llms.txt`) and **flare-foundation GitHub** repos, and tells you the skill would strengthen the review.
+## Use
 
-**Source priority for Flare claims:** (1) installed official Flare AI Skill → (2) Flare Developer Hub → (3) flare-foundation GitHub → (4) clearly-labeled secondary info. Never invented.
+Ask the agent to use the skill by name and point it at the project. Explicitly state that you want a review rather than implementation.
 
-## How to use it
+### Minimal request
 
-Point it at a repo and (optionally) a demo, then ask for the review. It infers what it can from the code before asking you anything.
-
-### Basic usage
-
-```
-Use flare-productizer to review this repository and give me the highest-priority next implementation prompt. Don't make changes.
-```
-
-### Repo + demo example
-
-```
+```text
 Use flare-productizer to review this repository.
 
-Product: An XRP yield onboarding app.
-Target user: XRP holders unfamiliar with EVM.
+Reconstruct what is actually implemented, identify the biggest gap between the
+current prototype and a usable product, and evaluate whether the Flare
+integration is meaningful. Do not modify any files. End with the single
+highest-priority next-task prompt.
+```
+
+### With product context and a demo
+
+```text
+Use flare-productizer to review this repository and the demo below.
+
+Product: An XRP yield onboarding app
+Target user: XRP holders who do not use EVM wallets
 Demo: https://example.com
 
-Evaluate the current product and Flare integration.
-Do not make changes.
-Give me the highest-priority next implementation prompt.
+Evaluate the current user flow, technical readiness, and Flare integration.
+Separate what you verify from what you infer or what the README only claims.
+Do not modify the project. End with the next-task prompt.
 ```
 
-### Video / screenshot example
+### With screenshots or video
 
-```
-Use flare-productizer to review this repo.
-
-Here's a demo recording: ./demo.mp4   (or attached screenshots)
-
-Reconstruct the user flow and assess the product. If you can't actually
-inspect the recording in this environment, tell me and say what fallback
-you need. Do not implement anything.
+```text
+Use flare-productizer to review this repository and the attached screenshots
+(or ./demo.mp4). Reconstruct the real user flow. If you cannot inspect the
+media in this environment, say so and ask for one usable fallback. Do not
+invent observations and do not modify the project.
 ```
 
-> Honesty guarantee: if the environment can't open your URL / video / screenshots, the skill says so and asks for a fallback (screenshots, a supported-format recording, or a short transcript) instead of pretending to have reviewed them.
+### Summer Signal mode
 
-### Summer Signal mode example
-
-```
-Use flare-productizer in Summer Signal mode.
-
-Review the current repo and this demo recording: [path or URL]
-
-Determine what already works, what separates this prototype from a usable
-product, whether the Flare integration is meaningful, and the three
-highest-impact improvements. Distinguish pre-existing work from new work.
-
-Do not implement anything. End with the next implementation prompt.
+```text
+Use flare-productizer in Summer Signal mode to review this repository and demo.
+Separate pre-existing work from work completed during the program when the
+repository history supports that distinction. Do not guess when it does not.
+Do not modify the project. End with the next-task prompt.
 ```
 
-## How the Next Implementation Prompt works
+Summer Signal mode adds program-specific review questions. It does not replace the normal product review and does not turn the output into a scorecard.
 
-Every review ends with a `NEXT IMPLEMENTATION PROMPT` — a self-contained, copy-ready prompt for the **single** highest-priority task (objective, user reason, context, files to inspect, requirements, constraints, required error/edge states, tests, definition of done, and "don't touch unrelated functionality").
+## Understanding the final prompt
 
-The skill **stops there**. Nothing in the reviewed repo is modified. You decide whether to paste that prompt into Claude Code / Cursor / Codex / Hermes / another agent and tell it to implement. Only then does implementation happen.
+`NEXT IMPLEMENTATION PROMPT` is a handoff, not an automatic action. It contains the objective, user reason, existing context, files or components to inspect, requirements, constraints, edge states, validation, and definition of done for one task.
+
+The reviewing agent stops after writing it. You decide whether to give that prompt to a coding agent. No implementation happens merely because the prompt exists.
 
 ## Repository layout
 
-```
+```text
 flare-productizer/
-  README.md
-  skills/
-    flare-productizer/
-      SKILL.md          # core skill instructions + workflow
-      reference.md      # official Flare source list, skill selection, prompt template
-      summer-signal.md  # optional Summer Signal lens
-      examples.md       # worked review scenarios (incl. an honest "superficial" case)
+├── README.md
+└── skills/
+    └── flare-productizer/
+        ├── SKILL.md          # behavior and review workflow
+        ├── reference.md      # source order and next-task template
+        ├── examples.md       # abbreviated example reviews
+        └── summer-signal.md  # optional program-specific lens
 ```
 
-## Notes on conventions
+## License
 
-The official Flare skills use folders named `flare-<name>-skill/`. This skill uses `skills/flare-productizer/` so the invocation name is exactly `flare-productizer`. If you add it to a marketplace/plugin setup that expects the `-skill` suffix, rename the folder accordingly; the `name:` in `SKILL.md` frontmatter is what agents match on.
+MIT
